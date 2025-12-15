@@ -89,9 +89,9 @@ final class blowfish
     0x11c81968, 0x4e734a41, 0xb3472dca, 0x7b14a94a, 0x1b510052, 0x9a532915,
     0xd60f573f, 0xbc9bc6e4, 0x2b60a476, 0x81e67400, 0x08ba6fb5, 0x571be91f,
     0xf296ec6b, 0x2a0dd915, 0xb6636521, 0xe7b9f9b6, 0xff34052e, 0xc5855664,
-    0x53b02d5d, 0xa99f8fa1, 0x08ba4799, 0x6e85076a];
+    0x53b02d5d, 0xa99f8fa1, 0x08ba4799, 0x6e85076a
+  ];
 
-  //S-Box1: 256*32 Bit
   private $sbox1 = [
     0x4b7a70e9, 0xb5b32944, 0xdb75092e, 0xc4192623, 0xad6ea6b0, 0x49a7df7d,
     0x9cee60b8, 0x8fedb266, 0xecaa8c71, 0x699a17ff, 0x5664526c, 0xc2b19ee1,
@@ -135,9 +135,9 @@ final class blowfish
     0xe8efd855, 0x61d99735, 0xa969a7aa, 0xc50c06c2, 0x5a04abfc, 0x800bcadc,
     0x9e447a2e, 0xc3453484, 0xfdd56705, 0x0e1e9ec9, 0xdb73dbd3, 0x105588cd,
     0x675fda79, 0xe3674340, 0xc5c43465, 0x713e38d8, 0x3d28f89e, 0xf16dff20,
-    0x153e21e7, 0x8fb03d4a, 0xe6e39f2b, 0xdb83adf7];
+    0x153e21e7, 0x8fb03d4a, 0xe6e39f2b, 0xdb83adf7
+  ];
 
-  //S-Box2: 256*32 Bit
   private $sbox2 = [
     0xe93d5a68, 0x948140f7, 0xf64c261c, 0x94692934, 0x411520f7, 0x7602d4f7,
     0xbcf46b2e, 0xd4a20068, 0xd4082471, 0x3320f46a, 0x43b7d4b7, 0x500061af,
@@ -181,9 +181,9 @@ final class blowfish
     0x39720a3d, 0x7c927c24, 0x86e3725f, 0x724d9db9, 0x1ac15bb4, 0xd39eb8fc,
     0xed545578, 0x08fca5b5, 0xd83d7cd3, 0x4dad0fc4, 0x1e50ef5e, 0xb161e6f8,
     0xa28514d9, 0x6c51133c, 0x6fd5c7e7, 0x56e14ec4, 0x362abfce, 0xddc6c837,
-    0xd79a3234, 0x92638212, 0x670efa8e, 0x406000e0];
+    0xd79a3234, 0x92638212, 0x670efa8e, 0x406000e0
+  ];
 
-  //S-Box3: 256*32 Bit
   private $sbox3 = [
     0x3a39ce37, 0xd3faf5cf, 0xabc27737, 0x5ac52d1b, 0x5cb0679e, 0x4fa33742,
     0xd3822740, 0x99bc9bbe, 0xd5118e9d, 0xbf0f7315, 0xd62d1c7e, 0xc700c47b,
@@ -227,14 +227,14 @@ final class blowfish
     0x38abbd60, 0x2547adf0, 0xba38209c, 0xf746ce76, 0x77afa1c5, 0x20756060,
     0x85cbfe4e, 0x8ae88dd8, 0x7aaaf9b0, 0x4cf9aa7e, 0x1948c25c, 0x02fb8a8c,
     0x01c36ae4, 0xd6ebe1f9, 0x90d4f869, 0xa65cdea0, 0x3f09252d, 0xc208e69f,
-    0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6];
+    0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6
+  ];
 
   public function __construct($key)
   {
     $this->KeySetup($key);
   }
 
-  //Verschluesseln
   public function Encrypt($text)
   {
     $text = htmlentities($text);
@@ -248,7 +248,6 @@ final class blowfish
     $text = str_pad($text, $lng, ' ');
     $text = $this->_str2long($text);
 
-    //Initialization vector: IV
     if (CBC === 1) {
       $cipher[0][0] = time();
       $cipher[0][1] = microtime(true) * 1000000;
@@ -257,8 +256,6 @@ final class blowfish
     $a = 1;
     for ($i = 0; $i < \count($text); $i += 2) {
       if (CBC === 1) {
-        //$text mit letztem Geheimtext XOR Verknuepfen
-        //$text is XORed with the previous ciphertext
         $text[$i] ^= $cipher[$a - 1][0];
         $text[$i + 1] ^= $cipher[$a - 1][1];
       }
@@ -276,7 +273,6 @@ final class blowfish
     return base64_encode($output);
   }
 
-  //Entschluesseln
   public function Decrypt($text)
   {
     $cipher = $this->_str2long(base64_decode($text, true));
@@ -285,19 +281,16 @@ final class blowfish
 
     if (CBC === 1) {
       $i = 2;
-    } //Message start at second block
-    else {
+    } else {
       $i = 0;
-    } //Message start at first block
+    }
 
     for ($i; $i < \count($cipher); $i += 2) {
       $return = $this->block_decrypt($cipher[$i], $cipher[$i + 1]);
 
-      //Xor Verknuepfung von $return und Geheimtext aus von den letzten beiden Bloecken
-      //XORed $return with the previous ciphertext
       if (CBC === 1) {
         $plain[] = [$return[0] ^ $cipher[$i - 2], $return[1] ^ $cipher[$i - 1]];
-      } else { //EBC Mode
+      } else {
         $plain[] = $return;
       }
     }
@@ -310,24 +303,9 @@ final class blowfish
     return html_entity_decode($output);
   }
 
-  public function DecryptSql(array $sql, array $columns)
-  {
-    foreach ($sql as $row) {
-      foreach ($columns as $col) {
-        if (null === $row->{$col} || empty($row->{$col})) {
-          continue;
-        }
-        $row->{$col} = trim($this->Decrypt($row->{$col}));
-      }
-    }
-
-    return $sql;
-  }
-
   public static function GenerateKey($length = 32)
   {
-    $characters = implode('', array_merge(range('a', 'z'), range('0', '9'), range('A', 'Z')));
-    // $characters       = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $characters       = implode('', array_merge(range('a', 'z'), range('0', '9'), range('A', 'Z')));
     $charactersLength = mb_strlen($characters);
     $randomString     = '';
     for ($i = 0; $i < $length; ++$i) {
@@ -337,27 +315,16 @@ final class blowfish
     return $randomString;
   }
 
-  //Bereitet den Key zum ver/entschluesseln vor
   private function KeySetup($key): void
   {
-    // include 'blow.box.php';
-    // global $pbox,$sbox0,$sbox1,$sbox2,$sbox3;
-    // exit(var_dump($pbox));
-    // $this->pbox  = $pbox;
-    // $this->sbox0 = $sbox0;
-    // $this->sbox1 = $sbox1;
-    // $this->sbox2 = $sbox2;
-    // $this->sbox3 = $sbox3;
-
     if ( ! isset($key) || 0 === mb_strlen($key)) {
       $key = [0];
-    } elseif (0 === mb_strlen($key) % 4) { //is the key a multiple of 4 bytes?
+    } elseif (0 === mb_strlen($key) % 4) {
       $key = $this->_str2long($key);
     } else {
       $key = $this->_str2long(str_pad($key, mb_strlen($key) + (4 - mb_strlen($key) % 4), $key));
     }
 
-    // XOR Pbox1 with the first 32 bits of the key, XOR P2 with the second 32-bits of the key,
     for ($i = 0; $i < \count($this->pbox); ++$i) {
       $this->pbox[$i] ^= $key[$i % \count($key)];
     }
@@ -365,37 +332,30 @@ final class blowfish
     $v[0] = 0x00000000;
     $v[1] = 0x00000000;
 
-    //P-Box durch verschluesselte Nullbit Bloecke ersetzen. In der niechsten Runde das Resultat erneut verschluesseln
-    //Encrypt Nullbit Blocks and replace the Pbox with the Chiffre. Next round, encrypt the result
     for ($i = 0; $i < \count($this->pbox); $i += 2) {
       $v                  = $this->block_encrypt($v[0], $v[1]);
       $this->pbox[$i]     = $v[0];
       $this->pbox[$i + 1] = $v[1];
     }
 
-    //S-Box [0 bis 3] durch verschloesselte Bloecke ersetzen
-    //Replace S-Box [0 to 3] entries with encrypted blocks
     for ($i = 0; $i < \count($this->sbox0); $i += 2) {
       $v                   = $this->block_encrypt($v[0], $v[1]);
       $this->sbox0[$i]     = $v[0];
       $this->sbox0[$i + 1] = $v[1];
     }
 
-    //S-Box1
     for ($i = 0; $i < \count($this->sbox1); $i += 2) {
       $v                   = $this->block_encrypt($v[0], $v[1]);
       $this->sbox1[$i]     = $v[0];
       $this->sbox1[$i + 1] = $v[1];
     }
 
-    //S-Box2
     for ($i = 0; $i < \count($this->sbox2); $i += 2) {
       $v                   = $this->block_encrypt($v[0], $v[1]);
       $this->sbox2[$i]     = $v[0];
       $this->sbox2[$i + 1] = $v[1];
     }
 
-    //S-Box3
     for ($i = 0; $i < \count($this->sbox3); $i += 2) {
       $v                   = $this->block_encrypt($v[0], $v[1]);
       $this->sbox3[$i]     = $v[0];
@@ -477,25 +437,11 @@ final class blowfish
     return (float) (($x < 0) ? $x + 4294967296 : $x);
   }
 
-  //Einen Text in Longzahlen umwandeln
-  //Covert a string into longinteger
   private function _str2long($data)
   {
     return array_values(unpack('N*', $data));
-    // TODO wait for test results
-    // $tmp       = unpack('N*', $data);
-    // $data_long = [];
-    // $j         = 0;
-
-    // foreach ($tmp as $value) {
-        //   $data_long[$j++] = $value;
-    // }
-
-    // return $data_long;
   }
 
-  //Longzahlen in Text umwandeln
-  //Convert a longinteger into a string
   private function _long2str($l)
   {
     return pack('N', $l);
