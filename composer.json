@@ -21,10 +21,10 @@
   },
   "autoload": {
     "files": [
-      "src/blowfish.php"
+      "src/Blowfish.php"
     ],
     "psr-4": {
-      "Braesident\\blowfish\\": "src/"
+      "Braesident\\Blowfish\\": "src/"
     }
   }
 }
