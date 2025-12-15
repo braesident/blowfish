@@ -36,7 +36,7 @@ namespace Braesident\Blowfish;
  * echo $plain;
  * ?>
  */
-final class blowfish
+final class Blowfish
 {
   private $pbox = [
     0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344,
