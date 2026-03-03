@@ -237,16 +237,18 @@ final class Blowfish
 
   public function Encrypt($text)
   {
-    $text = htmlentities($text);
-    $n    = mb_strlen($text);
-    if (0 !== $n % 8) {
-      $lng = ($n + (8 - ($n % 8)));
-    } else {
-      $lng = 0;
+    $text = htmlentities((string) $text, \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8');
+    $n    = strlen($text);
+    $pad  = (8 - ($n % 8)) % 8;
+    if ($pad > 0) {
+      $text = str_pad($text, $n + $pad, ' ');
+    }
+    $text = $this->_str2long($text);
+    if (0 !== \count($text) % 2) {
+      $text[] = 0;
     }
 
-    $text = str_pad($text, $lng, ' ');
-    $text = $this->_str2long($text);
+    $cipher = [];
 
     if (CBC === 1) {
       $cipher[0][0] = time();
@@ -317,12 +319,14 @@ final class Blowfish
 
   private function KeySetup($key): void
   {
-    if ( ! isset($key) || 0 === mb_strlen($key)) {
+    $key = (string) ($key ?? '');
+    if ('' === $key) {
       $key = [0];
-    } elseif (0 === mb_strlen($key) % 4) {
+    } elseif (0 === strlen($key) % 4) {
       $key = $this->_str2long($key);
     } else {
-      $key = $this->_str2long(str_pad($key, mb_strlen($key) + (4 - mb_strlen($key) % 4), $key));
+      $keyLength = strlen($key);
+      $key       = $this->_str2long(str_pad($key, $keyLength + (4 - $keyLength % 4), $key));
     }
 
     for ($i = 0; $i < \count($this->pbox); ++$i) {
@@ -439,7 +443,22 @@ final class Blowfish
 
   private function _str2long($data)
   {
-    return array_values(unpack('N*', $data));
+    $data = (string) ($data ?? '');
+    if ('' === $data) {
+      return [];
+    }
+
+    $lengthMod4 = strlen($data) % 4;
+    if (0 !== $lengthMod4) {
+      $data = str_pad($data, strlen($data) + (4 - $lengthMod4), "\0");
+    }
+
+    $unpacked = unpack('N*', $data);
+    if (! \is_array($unpacked)) {
+      return [];
+    }
+
+    return array_values($unpacked);
   }
 
   private function _long2str($l)
