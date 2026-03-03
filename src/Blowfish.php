@@ -281,7 +281,20 @@ final class Blowfish
   public function Decrypt($text)
   {
     // base64_decode returns raw binary; keep byte semantics all the way into _str2long().
-    $cipher = $this->_str2long(base64_decode($text, true));
+    $decoded = base64_decode((string) $text, true);
+    if (false === $decoded || '' === $decoded) {
+      return '';
+    }
+
+    $cipher = $this->_str2long($decoded);
+    if (CBC === 1 && \count($cipher) < 2) {
+      return '';
+    }
+    if (0 !== \count($cipher) % 2) {
+      // Decrypt always consumes pairs of 32-bit words; pad broken payloads defensively.
+      $cipher[] = 0;
+    }
+
     $output = '';
     $plain  = [];
 
