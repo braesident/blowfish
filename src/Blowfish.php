@@ -238,11 +238,14 @@ final class Blowfish
   public function Encrypt($text)
   {
     $text = htmlentities((string) $text, \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8');
+    // Blowfish block handling is byte-based (8-byte blocks), so do NOT use mb_strlen here.
     $n    = strlen($text);
     $pad  = (8 - ($n % 8)) % 8;
     if ($pad > 0) {
+      // Padding must also be byte-precise for deterministic block boundaries.
       $text = str_pad($text, $n + $pad, ' ');
     }
+    // Convert raw bytes to 32-bit words; multibyte-aware functions would corrupt alignment.
     $text = $this->_str2long($text);
     if (0 !== \count($text) % 2) {
       $text[] = 0;
@@ -277,6 +280,7 @@ final class Blowfish
 
   public function Decrypt($text)
   {
+    // base64_decode returns raw binary; keep byte semantics all the way into _str2long().
     $cipher = $this->_str2long(base64_decode($text, true));
     $output = '';
     $plain  = [];
@@ -322,9 +326,11 @@ final class Blowfish
     $key = (string) ($key ?? '');
     if ('' === $key) {
       $key = [0];
+      // Key schedule chunks are 4 bytes; use strlen (bytes), never mb_strlen.
     } elseif (0 === strlen($key) % 4) {
       $key = $this->_str2long($key);
     } else {
+      // Byte-exact key padding to 4-byte boundaries.
       $keyLength = strlen($key);
       $key       = $this->_str2long(str_pad($key, $keyLength + (4 - $keyLength % 4), $key));
     }
@@ -448,6 +454,7 @@ final class Blowfish
       return [];
     }
 
+    // unpack('N*') reads fixed-width 4-byte chunks; keep length checks byte-based.
     $lengthMod4 = strlen($data) % 4;
     if (0 !== $lengthMod4) {
       $data = str_pad($data, strlen($data) + (4 - $lengthMod4), "\0");
